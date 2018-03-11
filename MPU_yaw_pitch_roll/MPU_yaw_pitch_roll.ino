@@ -36,7 +36,7 @@ void setup()
 {
   pinMode(VIBRATION_MOTOR, OUTPUT);
   Serial.begin(115200);
-  mySerial.begin(115200);
+  mySerial.begin(9600);
 
   // Initialize MPU6050
   while (!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
@@ -59,8 +59,20 @@ void setup()
 
 void loop()
 {
+  char c;
+  if (Serial.available())
+  {
+    c = Serial.read();
+    mySerial.println(c);
+  }
 
-  if (stringComplete||mySerial.read() == 'c')
+  if (mySerial.available())
+  {
+    c = mySerial.read();
+    //Serial.print(c);
+  }
+  
+  if (stringComplete||c == 'c')
   {
     // Calibrate gyroscope. The calibration must be at rest.
     // If you don't want calibrate, comment this line.
@@ -74,6 +86,7 @@ void loop()
     pitch = 0.0;
     roll = 0.0;
     yaw = 0.0;
+    //Serial.println("reset");
   }
   timer = millis();
 
@@ -92,12 +105,6 @@ void loop()
   Serial.print(roll);
   Serial.print(" Yaw = ");
   Serial.println(yaw);
-//  mySerial.print(" Pitch = ");
-//  mySerial.print(pitch);
-//  mySerial.print(" Roll = ");
-//  mySerial.print(roll);
-//  mySerial.print(" Yaw = ");
-//  mySerial.println(yaw);
 
 if(pitch < -10.00 || pitch > 10.00)
 {
@@ -127,6 +134,7 @@ void serialEvent()
   while (Serial.available()) {
     // get the new byte:
     char inChar = (char)Serial.read();
+
     // add it to the inputString:
     inputString += inChar;
     // if the incoming character is 'c', set a flag so the main loop can
@@ -134,6 +142,13 @@ void serialEvent()
     if (inChar == 'c') {
       stringComplete = true;
     }
+
   }
 }
+
+bool incorrectPos()
+{
+    
+}
+
 
