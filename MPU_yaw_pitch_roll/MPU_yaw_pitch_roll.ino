@@ -4,6 +4,9 @@
 
 int VIBRATION_MOTOR = 3;
 
+bool check = false;
+bool badposture = false;
+
 // the setup function runs once when you press reset or power the board
 SoftwareSerial mySerial(7, 8); // RX, TX
 // Connect HM10      Arduino Uno
@@ -54,12 +57,13 @@ void setup()
 
   // Set threshold sensivty. Default 3.
   // If you don't want use threshold, comment this line or set 0.
-  //mpu.setThreshold(3);
+  mpu.setThreshold(2);
 }
 
 void loop()
 {
   char c;
+  check = false;
   if (Serial.available())
   {
     c = Serial.read();
@@ -71,8 +75,8 @@ void loop()
     c = mySerial.read();
     //Serial.print(c);
   }
-  
-  if (stringComplete||c == 'c')
+
+  if (stringComplete || c == 'c')
   {
     // Calibrate gyroscope. The calibration must be at rest.
     // If you don't want calibrate, comment this line.
@@ -80,12 +84,14 @@ void loop()
 
     // Set threshold sensivty. Default 3.
     // If you don't want use threshold, comment this line or set 0.
-    //mpu.setThreshold(3);
+    mpu.setThreshold(2);
     stringComplete = false;
-    setMillis(new_value);
+    
     pitch = 0.0;
-    roll = 0.0;
-    yaw = 0.0;
+    delay(2000);
+    setMillis(new_value);
+    //roll = 0.0;
+    //yaw = 0.0;
     //Serial.println("reset");
   }
   timer = millis();
@@ -95,26 +101,42 @@ void loop()
 
   // Calculate Pitch, Roll and Yaw
   pitch = pitch + norm.YAxis * timeStep;
-  roll = roll + norm.XAxis * timeStep;
-  yaw = yaw + norm.ZAxis * timeStep;
+  //roll = roll + norm.XAxis; //* timeStep;
+  //yaw = yaw + norm.ZAxis; //* timeStep;
 
   // Output raw
   Serial.print(" Pitch = ");
-  Serial.print(pitch);
-  Serial.print(" Roll = ");
-  Serial.print(roll);
-  Serial.print(" Yaw = ");
-  Serial.println(yaw);
+  Serial.println(pitch);
+//  Serial.print(" Roll = ");
+//  Serial.print(roll);
+//  Serial.print(" Yaw = ");
+//  Serial.println(yaw);
 
-if(pitch < -10.00 || pitch > 10.00)
-{
-//  digitalWrite(VIBRATION_MOTOR, HIGH);
-//  delay(500);
-//  digitalWrite(VIBRATION_MOTOR, LOW);
-  Serial.println("Incorrect Posture");
-  mySerial.println('i');
-  
-}
+  if (pitch < -10.00 || pitch > 10.00)
+  {
+    if (check == false)
+    {
+      if (badposture == false)
+      {
+        digitalWrite(VIBRATION_MOTOR, HIGH);
+        //delay(500);
+        //digitalWrite(VIBRATION_MOTOR, LOW);
+        //delay(500);
+        Serial.println("Incorrect Posture");
+        mySerial.println("1"); //incorrect posture
+        check = true;
+        badposture = true;
+      }
+      Serial.println("Incorrect Posture");
+    }
+  }
+  else
+  {
+    mySerial.println("0"); //correct posture
+    check = true;
+    badposture = false;
+    digitalWrite(VIBRATION_MOTOR, LOW);
+  }
 
   // Wait to full timeStep period
   delay((timeStep * 1000) - (millis() - timer));
@@ -148,7 +170,7 @@ void serialEvent()
 
 bool incorrectPos()
 {
-    
+
 }
 
 
