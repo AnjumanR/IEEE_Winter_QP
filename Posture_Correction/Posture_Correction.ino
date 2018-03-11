@@ -34,6 +34,7 @@ float yaw = 0;
 float pitch_init = 0;
 float roll_init = 0;
 float yaw_init = 0;
+bool init_value = false;
 
 void setup()
 {
@@ -57,7 +58,7 @@ void setup()
 
   // Set threshold sensivty. Default 3.
   // If you don't want use threshold, comment this line or set 0.
-  mpu.setThreshold(2);
+  mpu.setThreshold(3);
 }
 
 void loop()
@@ -78,18 +79,21 @@ void loop()
 
   if (stringComplete || c == 'c')
   {
+    digitalWrite(VIBRATION_MOTOR, LOW);
     // Calibrate gyroscope. The calibration must be at rest.
     // If you don't want calibrate, comment this line.
-    mpu.calibrateGyro();
-
+    //delay(1000);
+    //mpu.calibrateGyro();
+    pitch_init = pitch;
+    //delay(5000);
     // Set threshold sensivty. Default 3.
     // If you don't want use threshold, comment this line or set 0.
-    mpu.setThreshold(2);
+    //mpu.setThreshold(2);
+
     stringComplete = false;
-    
-    pitch = 0.0;
-    delay(2000);
-    setMillis(new_value);
+
+
+    //setMillis(new_value);
     //roll = 0.0;
     //yaw = 0.0;
     //Serial.println("reset");
@@ -101,18 +105,25 @@ void loop()
 
   // Calculate Pitch, Roll and Yaw
   pitch = pitch + norm.YAxis * timeStep;
+  if (!init_value)
+  {
+    pitch_init = pitch;
+    init_value = true;
+  }
+
+
   //roll = roll + norm.XAxis; //* timeStep;
   //yaw = yaw + norm.ZAxis; //* timeStep;
 
   // Output raw
   Serial.print(" Pitch = ");
   Serial.println(pitch);
-//  Serial.print(" Roll = ");
-//  Serial.print(roll);
-//  Serial.print(" Yaw = ");
-//  Serial.println(yaw);
+  //  Serial.print(" Roll = ");
+  //  Serial.print(roll);
+  //  Serial.print(" Yaw = ");
+  //  Serial.println(yaw);
 
-  if (pitch < -10.00 || pitch > 10.00)
+  if (pitch-pitch_init < -5.00 || pitch-pitch_init > 5.00)
   {
     if (check == false)
     {
