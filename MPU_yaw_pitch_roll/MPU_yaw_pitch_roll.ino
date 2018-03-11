@@ -168,9 +168,5 @@ void serialEvent()
   }
 }
 
-bool incorrectPos()
-{
-
-}
 
 
